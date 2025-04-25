@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import { users, dentists } from "../data/seedData";
 import User from "../models/User";
 import Dentist from "../models/Dentist";
+import Booking from "../models/Booking";
+import Waitlist from "../models/Waitlist";
 
 dotenv.config();
 
@@ -33,6 +35,8 @@ const destroyData = async () => {
     // Clear all data
     await User.deleteMany({});
     await Dentist.deleteMany({});
+    await Booking.deleteMany({});
+    await Waitlist.deleteMany({});
 
     console.log("Data destroyed successfully");
     process.exit();

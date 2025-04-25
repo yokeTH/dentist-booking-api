@@ -1,0 +1,434 @@
+openapi: 3.0.0
+info:
+  title: Dentist Booking API
+  version: 1.0.0
+  description: API for a dentist booking system
+servers:
+  - url: http://localhost:3000
+    description: Development server
+paths:
+  /api/auth/register:
+    post:
+      summary: Register a new user
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - phone
+                - password
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                phone:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '201':
+          description: User registered successfully
+        '400':
+          description: User already exists or invalid input
+  /api/auth/login:
+    post:
+      summary: Login user
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: User logged in successfully
+        '401':
+          description: Invalid credentials
+  /api/auth/logout:
+    post:
+      summary: Logout user
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: User logged out successfully
+  /api/auth/deactivate:
+    post:
+      summary: Deactivate user account
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Account deactivated successfully
+        '401':
+          description: Not authorized
+  /api/bookings:
+    post:
+      summary: Create a new booking
+      tags:
+        - Bookings
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - dentistId
+                - appointmentDate
+              properties:
+                dentistId:
+                  type: string
+                appointmentDate:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Booking created successfully
+        '400':
+          description: User already has a booking or invalid input
+        '401':
+          description: Not authorized
+    get:
+      summary: Get all bookings (admin only)
+      tags:
+        - Bookings
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of all bookings
+        '401':
+          description: Not authorized
+        '403':
+          description: Not authorized as admin
+  /api/bookings/me:
+    get:
+      summary: Get user's booking
+      tags:
+        - Bookings
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User's booking
+        '401':
+          description: Not authorized
+        '404':
+          description: No booking found
+    put:
+      summary: Update user's booking
+      tags:
+        - Bookings
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dentistId:
+                  type: string
+                appointmentDate:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Booking updated successfully
+        '400':
+          description: Changes must be made at least 24 hours before appointment
+        '401':
+          description: Not authorized
+        '404':
+          description: No booking found
+    delete:
+      summary: Delete user's booking
+      tags:
+        - Bookings
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Booking deleted successfully
+        '400':
+          description: Booking can only be canceled at least 24 hours before appointment
+        '401':
+          description: Not authorized
+        '404':
+          description: No booking found
+  /api/bookings/{id}:
+    put:
+      summary: Update any booking (admin only)
+      tags:
+        - Bookings
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: Booking ID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dentistId:
+                  type: string
+                appointmentDate:
+                  type: string
+                  format: date-time
+                userId:
+                  type: string
+      responses:
+        '200':
+          description: Booking updated successfully
+        '401':
+          description: Not authorized
+        '403':
+          description: Not authorized as admin
+        '404':
+          description: Booking not found
+    delete:
+      summary: Delete any booking (admin only)
+      tags:
+        - Bookings
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: Booking ID
+      responses:
+        '200':
+          description: Booking deleted successfully
+        '401':
+          description: Not authorized
+        '403':
+          description: Not authorized as admin
+        '404':
+          description: Booking not found
+  /api/dentists:
+    get:
+      summary: Get all dentists
+      tags:
+        - Dentists
+      responses:
+        '200':
+          description: List of dentists
+    post:
+      summary: Create a new dentist (admin only)
+      tags:
+        - Dentists
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - yearsOfExperience
+                - areaOfExpertise
+              properties:
+                name:
+                  type: string
+                yearsOfExperience:
+                  type: number
+                areaOfExpertise:
+                  type: string
+      responses:
+        '201':
+          description: Dentist created successfully
+        '401':
+          description: Not authorized
+        '403':
+          description: Not authorized as admin
+  /api/dentists/{id}:
+    get:
+      summary: Get dentist by ID
+      tags:
+        - Dentists
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: Dentist ID
+      responses:
+        '200':
+          description: Dentist details
+        '404':
+          description: Dentist not found
+    put:
+      summary: Update a dentist (admin only)
+      tags:
+        - Dentists
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: Dentist ID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                yearsOfExperience:
+                  type: number
+                areaOfExpertise:
+                  type: string
+      responses:
+        '200':
+          description: Dentist updated successfully
+        '401':
+          description: Not authorized
+        '403':
+          description: Not authorized as admin
+        '404':
+          description: Dentist not found
+    delete:
+      summary: Delete a dentist (admin only)
+      tags:
+        - Dentists
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: Dentist ID
+      responses:
+        '200':
+          description: Dentist deleted successfully
+        '401':
+          description: Not authorized
+        '403':
+          description: Not authorized as admin
+        '404':
+          description: Dentist not found
+  /api/waitlist:
+    post:
+      summary: Join the waitlist
+      tags:
+        - Waitlist
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - dentistId
+                - preferredDate
+              properties:
+                dentistId:
+                  type: string
+                preferredDate:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Added to waitlist successfully
+        '400':
+          description: Already on waitlist for this dentist
+        '401':
+          description: Not authorized
+    get:
+      summary: Get all waitlist entries (admin only)
+      tags:
+        - Waitlist
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of all waitlist entries
+        '401':
+          description: Not authorized
+        '403':
+          description: Not authorized as admin
+  /api/waitlist/me:
+    get:
+      summary: Get user's waitlist entries
+      tags:
+        - Waitlist
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User's waitlist entries
+        '401':
+          description: Not authorized
+  /api/waitlist/{id}:
+    delete:
+      summary: Remove from waitlist
+      tags:
+        - Waitlist
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: Waitlist entry ID
+      responses:
+        '200':
+          description: Removed from waitlist successfully
+        '401':
+          description: Not authorized
+        '404':
+          description: Waitlist entry not found
+components: {}
+tags:
+  - name: Authentication
+    description: User authentication endpoints
+  - name: Bookings
+    description: Booking management endpoints
+  - name: Dentists
+    description: Dentist management endpoints
+  - name: Waitlist
+    description: Waitlist management endpoints
