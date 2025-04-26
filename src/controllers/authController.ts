@@ -19,6 +19,29 @@ export const register = async (req: Request, res: Response) => {
   try {
     const { name, email, phone, password } = req.body;
 
+    // Validate input data
+    if (!name || !email || !password || !phone) {
+      return res.status(400).json({ message: "Please provide name, email, phone and password" });
+    }
+
+    // Validate email format
+    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Please provide a valid email address" });
+    }
+
+    // Validate password strength (at least 6 characters with one number and one special character)
+    if (password.length < 6) {
+      return res.status(400).json({
+        message: "Password must be at least 6 characters long",
+      });
+    }
+
+    const phoneRegex = /^\+?[0-9]{3}[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}$/;
+    if (!phoneRegex.test(phone)) {
+      return res.status(400).json({ message: "Please provide a valid phone number" });
+    }
+
     // Check if user already exists
     const userExists = await User.findOne({ email });
     if (userExists) {
